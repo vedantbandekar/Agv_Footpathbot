@@ -1,0 +1,371 @@
+/* ---------- Root Colors ---------- */
+:root {
+  --bg-main: #0b0b0c;
+  --bg-soft: #141416;
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.15);
+  --text-main: #f5f5f7;
+  --text-muted: #b5b5b7;
+  --shadow-deep: rgba(0, 0, 0, 0.6);
+}
+
+/* ---------- Global ---------- */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  background: radial-gradient(circle at top, #1a1a1d, var(--bg-main));
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: var(--text-main);
+  overflow: hidden;
+}
+
+/* ---------- Floating Button ---------- */
+#menu-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.8);
+}
+
+#menu-btn {
+  transition: all 0.25s ease;
+}
+
+#menu-btn {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--glass-bg);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--glass-border);
+  color: var(--text-main);
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: 0 10px 30px var(--shadow-deep);
+  z-index: 1000; /* 👈 THIS IS THE FIX */
+}
+
+/* ---------- Sidebar ---------- */
+#sidebar {
+  position: fixed;
+  top: 24px;
+  left: 24px;
+  width: 240px;
+  height: calc(100% - 48px);
+  padding: 20px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  box-shadow: 0 20px 50px var(--shadow-deep);
+
+  transform: translateX(-120%);
+  transition: transform 0.35s ease;
+}
+#sidebar.open {
+  transform: translateX(0);
+}
+
+/* ---------- Main Content ---------- */
+#content {
+  margin-left: 300px;
+  margin-top: 24px;
+  margin-right: 24px;
+  height: calc(100% - 48px);
+  padding: 24px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border-radius: 24px;
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 20px 50px var(--shadow-deep);
+  overflow-y: auto;
+}
+
+/* ---------- Titles ---------- */
+h1 {
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+/* ---------- Image Grid (basic for now) ---------- */
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.image-grid img {
+  width: 100%;
+  border-radius: 14px;
+}
+
+.dataset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+.dataset-card {
+  height: 180px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #eee;
+  cursor: pointer;
+  transition:
+    transform 0.25s ease,
+    background 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.dataset-card:hover {
+  transform: translateY(-6px);
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.dataset-card .thumb {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  margin-bottom: 10px;
+}
+
+.add-card {
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  background: transparent;
+}
+
+.add-card span {
+  font-size: 36px;
+  line-height: 1;
+}
+
+.preview-img {
+  width: 90px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal img {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 18px;
+  box-shadow: 0 0 40px rgba(255, 255, 255, 0.15);
+}
+.img-name {
+  font-size: 14px;
+  margin: 4px 0 2px;
+}
+
+.img-meta {
+  font-size: 11px;
+  opacity: 0.65;
+}
+.page-header {
+  margin-bottom: 25px;
+}
+
+.page-header h1 {
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.page-header p {
+  font-size: 13px;
+  opacity: 0.6;
+}
+.add-card {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.add-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+}
+
+/* Image Modal */
+.modal {
+  display: none; /* hidden by default */
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(6px);
+
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+.modal .close {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  font-size: 36px;
+  color: white;
+  cursor: pointer;
+}
+
+.dataset-card input {
+  width: 90%;
+  margin-top: 6px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: none;
+  background: #2e2e2e;
+  color: white;
+  font-size: 13px;
+}
+
+.delete-btn {
+  margin-top: 8px;
+  padding: 6px;
+  width: 90%;
+  background: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  background: #ff2f2f;
+}
+
+.img-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.delete-btn {
+  background: rgba(255, 0, 0, 0.15);
+  border: 1px solid rgba(255, 0, 0, 0.4);
+  color: #ff6b6b;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  background: rgba(255, 0, 0, 0.3);
+}
+
+.tag-form {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.tag-input {
+  flex: 1;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+}
+
+.tag-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.tag-save {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(0, 150, 255, 0.25);
+  color: white;
+  cursor: pointer;
+}
+
+.tag-save:hover {
+  background: rgba(0, 150, 255, 0.4);
+}
+
+.tag-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.tag-badge {
+  background: #2d8cff;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+}
+
+.edit-tag {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #aaa;
+}
+
+.dataset-card.hidden {
+  opacity: 0;
+  pointer-events: none;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* --- Tag filter dropdown (prevent shifting) --- */
+.tag-filter {
+  width: 120px;
+  min-width: 120px;
+  max-width: 120px;
+}
+
+.hidden {
+  display: none;
+}
+
+.dataset-stats {
+  display: flex;
+  gap: 16px;
+  padding: 12px 20px;
+  font-size: 14px;
+  color: #ccc;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
