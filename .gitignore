@@ -1,0 +1,13 @@
+venv
+serviceAccountKey.json
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+.idea/
+*.log
+*.sqlite3
+*.db
+*.env
+*.pem
+*.key

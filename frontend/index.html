@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rover OS | Command</title>
+
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+
+    <!-- Core Styles -->
+    <style>
+        :root {
+            --bg: #000;
+            --glass: rgba(28, 28, 30, 0.7);
+            --accent: #007AFF;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: #f5f5f7;
+            letter-spacing: -0.01em;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        .apple-glass {
+            background: var(--glass);
+            backdrop-filter: saturate(180%) blur(20px);
+            border: 1px solid rgba(255,255,255,.1);
+            border-radius: 18px;
+            transition: border-color .3s ease, transform .3s ease;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Map */
+        #map {
+            height: 100%;
+            width: 100%;
+            background: #000;
+        }
+
+        .leaflet-tile {
+            filter: brightness(.6) invert(1) contrast(3) hue-rotate(200deg) saturate(.3);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen p-6 lg:p-12">
+<div class="max-w-6xl mx-auto">
+
+    <!-- HEADER -->
+    <header class="mb-12 flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-semibold tracking-tight">
+                Rover <span class="text-slate-500 font-normal">Command</span>
+            </h1>
+            <p id="statusText" class="text-[11px] uppercase tracking-widest text-slate-500 mt-1">
+                System Standby
+            </p>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
+                <div id="statusDot" class="status-dot bg-red-500"></div>
+                <span class="text-[10px] font-medium tracking-wide">LIVE</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN -->
+    <main class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <!-- LEFT COLUMN -->
+        <section class="space-y-6">
+
+            <!-- UNIT DATA -->
+            <div class="apple-glass p-6">
+                <p class="section-title">Unit Data</p>
+
+                <div class="space-y-4">
+                    <div>
+                        <span class="text-xs text-slate-400">Designation</span>
+                        <p id="roverId" class="text-xl font-medium">--</p>
+                    </div>
+
+                    <div>
+                        <span class="text-xs text-slate-400">Range Finder</span>
+                        <p class="text-xl font-medium">
+                            <span id="distance">--</span>
+                            <span class="text-sm text-slate-500 font-normal">cm</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MANUAL OVERRIDE -->
+            <div class="apple-glass p-6">
+                <p class="section-title">Manual Override</p>
+
+                <div class="space-y-3 text-xs">
+                    <input id="mLat" placeholder="Latitude" class="input" />
+                    <input id="mLng" placeholder="Longitude" class="input" />
+                    <input id="mDist" placeholder="Ultrasonic Distance (cm)" class="input" />
+                    <input
+                        id="mImage"
+                        type="file"
+                        accept="image/*"
+                        class="w-full bg-black/40 px-3 py-2 rounded border border-white/10 text-xs"
+                    />
+                    <button id="sendManual" class="btn-primary">
+                        PUSH TELEMETRY
+                    </button>
+                </div>
+            </div>
+
+            <!-- VISUAL INTAKE -->
+            <div class="apple-glass overflow-hidden group hover:border-blue-500/30">
+                <div class="p-4 border-b border-white/5 flex justify-between bg-white/5">
+                    <p class="section-title">Visual Intake</p>
+                    <span class="text-[9px] mono text-blue-500 animate-pulse">AUTO_REFRESH</span>
+                </div>
+
+                <div class="aspect-square relative bg-black">
+                    <img id="botImage"
+                         class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition"
+                         alt="Rover Capture">
+
+                    <div class="absolute bottom-3 left-3 px-2 py-1 bg-black/60 backdrop-blur rounded text-[9px] mono">
+                        IMG_REF: <span id="imgTime">LATEST</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BATTERY -->
+            <div class="apple-glass p-6">
+                <p class="section-title">Battery & Thermal</p>
+
+                <div class="space-y-5">
+                    <div>
+                        <div class="flex justify-between text-xs">
+                            <span>Power Level</span>
+                            <span id="battery" class="mono">--%</span>
+                        </div>
+                        <div class="bar">
+                            <div id="batteryBar" class="bar-fill"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs">
+                            <span>Core Temp</span>
+                            <span class="mono">42°C</span>
+                        </div>
+                        <div class="bar">
+                            <div class="bar-fill w-[40%] opacity-40"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- RIGHT COLUMN -->
+        <section class="md:col-span-2 space-y-6">
+
+            <!-- MAP -->
+            <div class="apple-glass overflow-hidden hover:border-blue-500/30">
+                <div class="aspect-video relative bg-black">
+                    <div id="map"></div>
+
+                    <div class="absolute inset-0 pointer-events-none opacity-10 scanlines"></div>
+                </div>
+
+                <div class="p-6 bg-[#1c1c1e]/80 border-t border-white/5 flex justify-between">
+                    <div>
+                        <p class="label">Global Positioning</p>
+                        <p id="gps" class="mono text-xs text-blue-400">
+                            Initializing Satellite…
+                        </p>
+                    </div>
+
+                    <div class="text-right">
+                        <p class="label">Precision Lat/Lng</p>
+                        <div class="flex gap-3 mono text-[11px]">
+                            <span id="lat">--</span>
+                            <span id="lng">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HISTORY -->
+            <div class="apple-glass p-6">
+                <p class="section-title">Telemetry History</p>
+                <ul id="history" class="mono text-[11px] space-y-2 max-h-32 overflow-y-auto no-scrollbar">
+                    <li class="text-slate-600 italic">No historical data…</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+</div>
+
+<!-- JS -->
+<script type="module" src="assets/js/dashboard.js"></script>
+
+<!-- UTIL CLASSES -->
+<style>
+    .section-title {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .1em;
+        color: #94a3b8;
+        margin-bottom: 1rem;
+    }
+
+    .label {
+        font-size: 10px;
+        text-transform: uppercase;
+        color: #64748b;
+        font-weight: 600;
+        margin-bottom: .25rem;
+    }
+
+    .input {
+        width: 100%;
+        background: rgba(0,0,0,.4);
+        padding: .5rem .75rem;
+        border-radius: .375rem;
+        border: 1px solid rgba(255,255,255,.1);
+        outline: none;
+    }
+
+    .btn-primary {
+        width: 100%;
+        margin-top: .5rem;
+        background: var(--accent);
+        padding: .5rem;
+        border-radius: .375rem;
+        font-size: .75rem;
+        font-weight: 600;
+    }
+
+    .bar {
+        width: 100%;
+        height: 4px;
+        background: rgba(255,255,255,.05);
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .bar-fill {
+        height: 100%;
+        background: var(--accent);
+        width: 0;
+        transition: width 1s ease;
+    }
+
+    .scanlines {
+        background:
+            linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,.25) 50%),
+            linear-gradient(90deg, rgba(255,0,0,.06), rgba(0,255,0,.02), rgba(0,0,118,.06));
+        background-size: 100% 2px, 3px 100%;
+    }
+</style>
+</body>
+</html>
