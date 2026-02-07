@@ -48,11 +48,19 @@ function saveTag(button) {
 
   if (!label) return;
 
-  fetch("/update_label", {
+  fetch(`/update-meta/${imageId}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ image_id: imageId, label: label })
-  }).then(() => {
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      label: label
+    })
+  })
+  .then(res => {
+    if (!res.ok) throw new Error("Backend failed");
+
+    // ✅ update UI ONLY after DB success
     input.classList.add("hidden");
     button.classList.add("hidden");
 
@@ -60,8 +68,15 @@ function saveTag(button) {
     badge.classList.remove("hidden");
 
     editBtn.classList.remove("hidden");
+
+    card.dataset.tag = label;
+  })
+  .catch(err => {
+    alert("Tag not saved");
+    console.error(err);
   });
 }
+
 
 function editTag(button) {
   const card = button.closest(".dataset-card");

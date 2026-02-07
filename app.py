@@ -16,11 +16,13 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             filename TEXT,
             date TEXT,
-            time TEXT
+            time TEXT,
+            label TEXT
         )
     """)
     conn.commit()
     conn.close()
+
 
 
 app = Flask(__name__)
@@ -97,34 +99,29 @@ def upload_image():
 
     return "Image received", 200
 
-@app.route("/update_label/<int:image_id>", methods=["POST"])
-def update_label(image_id):
-    label = request.form.get("label")
-
+@app.route("/delete/<int:image_id>", methods=["POST"])
+def delete_image(image_id):
     conn = get_db_connection()
-    conn.execute(
-        "UPDATE images SET label = ? WHERE id = ?",
-        (label, image_id)
-    )
+    img = conn.execute(
+        "SELECT * FROM images WHERE id = ?",
+        (image_id,)
+    ).fetchone()
+
+    if img is None:
+        conn.close()
+        return "Image not found", 404
+
+    # delete file
+    image_path = os.path.join(IMAGE_FOLDER, img["date"], img["filename"])
+    if os.path.exists(image_path):
+        os.remove(image_path)
+
+    # delete from db
+    conn.execute("DELETE FROM images WHERE id = ?", (image_id,))
     conn.commit()
     conn.close()
 
     return redirect(url_for("dataset"))
-
-@app.route("/tag/<int:image_id>", methods=["POST"])
-def save_tag(image_id):
-    tag = request.form.get("tag", "").strip()
-
-    conn = get_db_connection()
-    conn.execute(
-        "UPDATE images SET tag = ? WHERE id = ?",
-        (tag, image_id)
-    )
-    conn.commit()
-    conn.close()
-
-    return redirect(url_for("dataset"))
-
 
 @app.route('/images/<date>/<filename>')
 def serve_image(date, filename):
@@ -132,26 +129,6 @@ def serve_image(date, filename):
 
 if __name__ == "__main__":
     app.run(debug=True, use_reloader=False)
-
-@app.route("/delete/<int:image_id>", methods=["POST"])
-def delete_image(image_id):
-    conn = get_db_connection()
-
-    img = conn.execute(
-        "SELECT filename, date FROM images WHERE id = ?",
-        (image_id,)
-    ).fetchone()
-
-    if img:
-        path = os.path.join(IMAGE_FOLDER, img["date"], img["filename"])
-        if os.path.exists(path):
-            os.remove(path)
-
-        conn.execute("DELETE FROM images WHERE id = ?", (image_id,))
-        conn.commit()
-
-    conn.close()
-    return "", 204
 
 @app.route("/update-meta/<int:image_id>", methods=["POST"])
 def update_meta(image_id):
@@ -176,4 +153,3 @@ def update_meta(image_id):
     conn.commit()
     conn.close()
     return "", 204
-
